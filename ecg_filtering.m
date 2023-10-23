@@ -16,14 +16,20 @@ std_dev_centered = std(centered_ecg_noise);
 standardized_ecg_noise = centered_ecg_noise / std_dev_centered;
 % figure; plot(standardized_ecg_noise);
 
-% Create the transfer function
+% Create the low-pass transfer function
 num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10))
 den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) 
-H_z = tf(num_low_pass, den_low_pass, 1)
+H_z_low_pass = tf(num_low_pass, den_low_pass, 1);
 
-% Apply the transfer function H_z to the data using the filter function
-% output_data = filter(H_z.Numerator{1}, H_z.Denominator{1}, standardized_ecg_noise);
+% Create the high-pass transfer function
+num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32
+den_high_pass = [1 -1]; % 1 - z^(-1)
+H_z_high_pass = tf(num_high_pass, den_high_pass, 1);
+
+% Apply the low-pass and high-pass filters to the ECG data
 low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
+high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
+bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg);
 
 % Plot the input and filtered output data
 figure;
@@ -32,5 +38,14 @@ plot(standardized_ecg_noise);
 title('Standardized ECG with Noise');
 
 subplot(2,1,2);
+plot(bandpass_ecg);
+title('Bandpass ECG');
+
+figure;
+subplot(2,1,1);
 plot(low_pass_ecg);
-title('Low Pass ECG');
+title('Low-Pass ECG');
+
+subplot(2,1,2);
+plot(high_pass_ecg);
+title('High-Pass ECG');
