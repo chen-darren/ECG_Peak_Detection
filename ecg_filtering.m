@@ -31,21 +31,39 @@ low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
 high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
 bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg);
 
-% Plot the input and filtered output data
+% % Plot original input, low-pass, high-pass, and bandpass
+% figure;
+% subplot(2,1,1);
+% plot(standardized_ecg_noise);
+% title('Standardized ECG with Noise');
+% 
+% subplot(2,1,2);
+% plot(bandpass_ecg);
+% title('Bandpass ECG');
+% 
+% figure;
+% subplot(2,1,1);
+% plot(low_pass_ecg);
+% title('Low-Pass ECG');
+% 
+% subplot(2,1,2);
+% plot(high_pass_ecg);
+% title('High-Pass ECG');
+
+% Create derivative transfer function
+num_der = [2 1 0 -1 -2];
+den_der = [0.1];
+H_z_derivative = tf(num_der, den_der, 1);
+
+% Apply derivative transfer function to bandpass output
+derivative_ecg = filter(num_der, den_der, bandpass_ecg);
+
+% Plot bandpass and derivative
 figure;
 subplot(2,1,1);
-plot(standardized_ecg_noise);
-title('Standardized ECG with Noise');
-
-subplot(2,1,2);
 plot(bandpass_ecg);
 title('Bandpass ECG');
 
-figure;
-subplot(2,1,1);
-plot(low_pass_ecg);
-title('Low-Pass ECG');
-
 subplot(2,1,2);
-plot(high_pass_ecg);
-title('High-Pass ECG');
+plot(derivative_ecg);
+title('Derivative ECG');
