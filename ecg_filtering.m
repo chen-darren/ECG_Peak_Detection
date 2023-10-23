@@ -58,6 +58,9 @@ H_z_derivative = tf(num_der, den_der, 1);
 % Apply derivative transfer function to bandpass output
 derivative_ecg = filter(num_der, den_der, bandpass_ecg);
 
+% Square the derivative output
+squared_ecg = derivative_ecg.^2;
+
 % Plot bandpass and derivative
 figure;
 subplot(2,1,1);
@@ -65,5 +68,7 @@ plot(bandpass_ecg);
 title('Bandpass ECG');
 
 subplot(2,1,2);
-plot(derivative_ecg);
-title('Derivative ECG');
+plot(squared_ecg);
+title('Squared ECG');
+
+
