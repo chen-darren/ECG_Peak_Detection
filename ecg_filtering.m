@@ -6,10 +6,10 @@ ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Ye
 
 % Load data - Darren: original data file converted to .csv
 ecg_noise_filename = 'ECG_with_noise.csv';
-ecg_noise = readmatrix(strcat(ecg_noise_path, filesep ,ecg_noise_filename));
+ecg_noise = readmatrix(strcat(ecg_noise_path, filesep ,ecg_noise_filename)); %accesses ECG csv document and reads into MATLAB
 
 % Standardize data - Darren: ECG data is centered with STD ~ 1
-mean_ecg_noise = mean(ecg_noise);
+mean_ecg_noise = mean(ecg_noise); 
 centered_ecg_noise = ecg_noise - mean_ecg_noise;
 std_dev_centered = std(centered_ecg_noise);
 standardized_ecg_noise = centered_ecg_noise / std_dev_centered;
@@ -25,19 +25,19 @@ plot(standardized_ecg_noise);
 title('Standardized ECG with Noise');
 
 % Create the low-pass transfer function
-num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10))
-den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) 
-H_z_low_pass = tf(num_low_pass, den_low_pass, 1);
+num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10)) - sets up numerator of transfer function
+den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) - sets up denominator of transfer function
+H_z_low_pass = tf(num_low_pass, den_low_pass, 1); %creates transfer function for those frequencies between the boundaries
 
 % Create the high-pass transfer function
-num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32
-den_high_pass = [1 -1]; % 1 - z^(-1)
-H_z_high_pass = tf(num_high_pass, den_high_pass, 1);
+num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32 - sets up numerator
+den_high_pass = [1 -1]; % 1 - z^(-1) - sets up denominator
+H_z_high_pass = tf(num_high_pass, den_high_pass, 1); %creates transfer function for frequencies between boundaries
 
 % Apply the low-pass and high-pass filters to the ECG data
 low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
 high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
-bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg);
+bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg); %overlaps filtering from low pass filter with filtering from high pass filter
 
 % Plot original input, low-pass, high-pass, and bandpass
 figure;
@@ -61,10 +61,10 @@ title('High-Pass ECG');
 % Create derivative transfer function
 num_der = [2 1 0 -1 -2];
 den_der = [0.1];
-H_z_derivative = tf(num_der, den_der, 1);
+H_z_derivative = tf(num_der, den_der, 1); %creates transfer function for derivative function
 
 % Apply derivative transfer function to bandpass output
-derivative_ecg = filter(num_der, den_der, bandpass_ecg);
+derivative_ecg = filter(num_der, den_der, bandpass_ecg); %applies previously created transfer function
 
 % Square the derivative output
 squared_ecg = derivative_ecg.^2;
@@ -82,5 +82,4 @@ title('Derivative ECG');
 figure;
 plot(squared_ecg);
 title('Squared ECG');
-
 
