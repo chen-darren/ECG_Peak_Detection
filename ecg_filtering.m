@@ -109,10 +109,10 @@ title('Bandpass ECG')
 % Create derivative transfer function
 num_der = [2 1 0 -1 -2];
 den_der = [0.1];
-H_z_derivative = tf(num_der, den_der, 1); %creates transfer function for derivative function
+H_z_derivative = tf(num_der, den_der, 1); % Creates transfer function for derivative function
 
 % Apply derivative transfer function to bandpass output
-derivative_ecg = filter(num_der, den_der, bandpass_ecg); %applies previously created transfer function
+derivative_ecg = filter(num_der, den_der, bandpass_ecg); % Applies previously created transfer function
 
 % Square the derivative output
 squared_ecg = derivative_ecg.^2;
