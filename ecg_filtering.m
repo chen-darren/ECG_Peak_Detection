@@ -5,8 +5,9 @@ ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Ye
 % ecg_noise_path = 
 
 % Load data - Darren: original data file converted to .csv
-ecg_noise_filename = 'ECG_with_noise.csv';
-ecg_noise = readmatrix(strcat(ecg_noise_path, filesep ,ecg_noise_filename));
+ecg_noise_filename = 'ecgwithnoise';
+ecg_noise = readmatrix(strcat(ecg_noise_path,filesep,ecg_noise_filename));
+ecg_noise = ecg_noise(:,3); % Get rid of the NaN
 
 % Plot original
 figure;
@@ -14,19 +15,19 @@ plot(ecg_noise);
 title('ECG with Noise');
 
 % % Create the low-pass transfer function
-% num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10))
-% den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) 
-% H_z_low_pass = tf(num_low_pass, den_low_pass, 1);
+% num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10)) - Sets up numerator of transfer function
+% den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) - Sets up denominator of transfer function
+% H_z_low_pass = tf(num_low_pass, den_low_pass, 1); % Creates transfer function for those frequencies between the boundaries
 % 
 % % Create the high-pass transfer function
-% num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32
-% den_high_pass = [1 -1]; % 1 - z^(-1)
-% H_z_high_pass = tf(num_high_pass, den_high_pass, 1);
+% num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32 - Sets up numerator
+% den_high_pass = [1 -1]; % 1 - z^(-1) - Sets up denominator
+% H_z_high_pass = tf(num_high_pass, den_high_pass, 1); % Creates transfer function for frequencies between boundaries
 % 
 % % Apply the low-pass and high-pass filters to the ECG data
-% low_pass_ecg = filter(num_low_pass, den_low_pass, ecg_noise);
-% high_pass_ecg = filter(num_high_pass, den_high_pass, ecg_noise);
-% bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg);
+% low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
+% high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
+% bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg); % Overlaps filtering from low pass filter with filtering from high pass filter
 
 % Low-pass filter with difference equation
 low_pass_ecg = [ecg_noise(1) 2*ecg_noise(1)+ecg_noise(2)]; % Darren: y(1) = x(1), y(2) = 2y(1)+x(2), T = 1
@@ -71,40 +72,6 @@ title('ECG with Noise');
 subplot(2,1,2);
 plot(standardized_ecg_noise);
 title('Standardized ECG with Noise');
-
-% Create the low-pass transfer function
-num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10)) - Sets up numerator of transfer function
-den_low_pass = [1 -2 1];  % [1 - z^(-1)]^2 = 1 - 2z^(-1) + z^(-2) - Sets up denominator of transfer function
-H_z_low_pass = tf(num_low_pass, den_low_pass, 1); % Creates transfer function for those frequencies between the boundaries
-
-% Create the high-pass transfer function
-num_high_pass = [-1/32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1/32]; % -1/32 + z^(-16) - z^(-17) + z^(-32)/32 - Sets up numerator
-den_high_pass = [1 -1]; % 1 - z^(-1) - Sets up denominator
-H_z_high_pass = tf(num_high_pass, den_high_pass, 1); % Creates transfer function for frequencies between boundaries
-
-% Apply the low-pass and high-pass filters to the ECG data
-low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
-high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
-bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg); % Overlaps filtering from low pass filter with filtering from high pass filter
-
-% Plot original input, low-pass, high-pass, and bandpass
-figure;
-subplot(2,1,1);
-plot(standardized_ecg_noise);
-title('Standardized ECG with Noise');
-
-subplot(2,1,2);
-plot(bandpass_ecg);
-title('Bandpass ECG');
-
-figure;
-subplot(2,1,1);
-plot(low_pass_ecg);
-title('Low-Pass ECG');
-
-subplot(2,1,2);
-plot(bandpass_ecg);
-title('Bandpass ECG')
 
 % Create derivative transfer function
 num_der = [2 1 0 -1 -2];
