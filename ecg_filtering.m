@@ -90,13 +90,13 @@ subplot(2,1,2);
 plot(bandpass_ecg);
 title('Bandpass ECG');
 
-% Create derivative transfer function
-num_der = [2 1 0 -1 -2];
-den_der = [1];
-H_z_derivative = tf(num_der, den_der, 0.125); % Creates transfer function for derivative function
-
-% Apply derivative transfer function to bandpass output
-derivative_ecg = filter(num_der, den_der, bandpass_ecg); % Applies previously created transfer function
+% % Create derivative transfer function
+% num_der = [2 1 0 -1 -2];
+% den_der = [1];
+% H_z_derivative = tf(num_der, den_der, 0.125); % Creates transfer function for derivative function
+% 
+% % Apply derivative transfer function to bandpass output
+% derivative_ecg = filter(num_der, den_der, bandpass_ecg); % Applies previously created transfer function
 
 % Derivative difference function
 derivative_ecg = [2*bandpass_ecg(1)/8]; % y(1) = 2x(n)/8
