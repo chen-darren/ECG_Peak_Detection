@@ -1,10 +1,10 @@
 % Darren's paths
-ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Year 3\Fall 2023\BME 3400 (Chon)\Project\ECG_Peak_Detection';
+%ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Year 3\Fall 2023\BME 3400 (Chon)\Project\ECG_Peak_Detection';
 
 % Shreya's paths - Darren: please use the same name for the path variables and comment out mine when running
-& ecg_noise_path = '/Users/shreyanagri/Downloads/'
+ecg_noise_path = '/Users/shreyanagri/Downloads/'
 
-% Load data - Darren: original data file
+% Load data - Darren: original data file converted to .csv
 ecg_noise_filename = 'ecgwithnoise';
 ecg_noise = readmatrix(strcat(ecg_noise_path,filesep,ecg_noise_filename));
 ecg_noise = ecg_noise(:,3); % Get rid of the NaN
@@ -33,15 +33,15 @@ title('ECG with Noise');
 low_pass_ecg = [ecg_noise(1) 2*ecg_noise(1)+ecg_noise(2)]; % Darren: y(1) = x(1), y(2) = 2y(1)+x(2), T = 1
 for n = 3:5 % Darren
     low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n); % Darren: y(n) = 2(n-1) - y(n-2) + x(n)
-end
+end;
 
 for n = 6:10
     low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5); % Darren: y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5)
-end
+end;
 
 for n = 11:size(ecg_noise,1)
     low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5) + ecg_noise(n-10); % Darren: y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5) + x(n-10)
-end
+end;
 low_pass_ecg = low_pass_ecg.'; % Transpose into column vector
 
 % High-pass filter with difference equation
@@ -49,17 +49,17 @@ bandpass_ecg = [(-1/32)*low_pass_ecg(1)];
 
 for n = 2:16
     bandpass_ecg(n) = bandpass_ecg(n-1) - (1/32)*low_pass_ecg(n);
-end
+end;
 
 bandpass_ecg(17) = bandpass_ecg(17-1) - (1/32)*low_pass_ecg(17) + low_pass_ecg(17-16);
 
 for n = 18:32
     bandpass_ecg(n) = bandpass_ecg(n-1) - (1/32)*low_pass_ecg(n) + low_pass_ecg(n-16) - low_pass_ecg(n-17);
-end
+end;
 
 for n = 33:size(low_pass_ecg,1)
     bandpass_ecg(n) = bandpass_ecg(n-1) - (1/32)*low_pass_ecg(n) + low_pass_ecg(n-16) - low_pass_ecg(n-17) + (1/32)*low_pass_ecg(n-32);
-end
+end;
 bandpass_ecg = bandpass_ecg.';
 
 % Plot original input, low-pass, and bandpass
@@ -103,13 +103,13 @@ derivative_ecg = [2*bandpass_ecg(1)/8]; % y(1) = 2x(n)/8
 
 for n = 2:3
     derivative_ecg(n) = (2*bandpass_ecg(n) + bandpass_ecg(n-1))/8; % y(n) = [2x(n) + x(n-1)]/8
-end
+end;
 
 derivative_ecg(4) = (2*bandpass_ecg(4) + bandpass_ecg(4-1) - bandpass_ecg(4-3))/8; % y(n) = [2x(n) + x(n-1) - x(n-3)]/8
 
 for n = 5:size(bandpass_ecg,1)
     derivative_ecg(n) = (2*bandpass_ecg(n) + bandpass_ecg(n-1) - bandpass_ecg(n-3) - 2*bandpass_ecg(n-4))/8; % y(n) = [2x(n) + x(n-1) - x(n-3) - 2x(n-4)]/8
-end
+end;
 derivative_ecg = derivative_ecg.';
 
 % Square the derivative output
