@@ -129,14 +129,25 @@ figure;
 plot(squared_ecg);
 title('Squared ECG');
 
-for N = 30:30:size(squared_ecg)
-    for n = (N-29):N
+for N = 30:30:size(squared_ecg) %creates windows that are each 30 values big
+    for n = (N-29):N %samples for the thirty value window from 1-30
         for z = (N-29):N
-            i(n) = squared_ecg(z);
+            i(n) = squared_ecg(z);%takes the values of the ecg for those values in the window
         end;
-        integrated_ecg(n) = sum(i(n));
+        integrated_ecg(n) = sum(i(n)); %calculates the integration for that window
     end;
 end;
 figure; 
 plot(integrated_ecg);
 title('Integrated ECG');
+
+cutoff = 80; %set a threshold value to define QRS complex
+for T = 30:30:size(integrated_ecg) %define windows again
+    for k = (T-29):T
+        if integrated_ecg(n) > cutoff
+            cutoff = integrated_ecg(n); %set cutoff to a different value if above 80
+        else
+            cutoff = maxvalues(T/30); %keeps current values if the next value is less than previous cutoff
+        end;
+    end;
+end;
