@@ -129,14 +129,12 @@ figure;
 plot(squared_ecg);
 title('Squared ECG');
 
-% Moving-window integration
 for N = 30:30:size(squared_ecg) % Creates windows that are each 30 values big
     for n = (N-29):N % Samples for the thirty value window from 1-30 with respect to each window
-        integrated_ecg(n) = sum(squared_ecg((N-29):N)); % Integrates by making each point the sum of previous the 30 sample window 
+        integrated_ecg(n) = sum(squared_ecg((N-29):N)); % Calculates the integration for that window by summing all values in the window
     end;
 end;
 
-% Plot integrated
 figure; 
 plot(integrated_ecg);
 title('Integrated ECG');
