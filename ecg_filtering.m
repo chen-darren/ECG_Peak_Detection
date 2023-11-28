@@ -28,14 +28,14 @@ ecg_noise = ecg_noise(:,3); % Get rid of the NaN
 % H_z_high_pass = tf(num_high_pass, den_high_pass, 1); % Creates transfer function for frequencies between boundaries
 % 
 % % Apply the low-pass and high-pass filters to the ECG data
-% low_pass_ecg = filter(num_low_pass, den_low_pass, standardized_ecg_noise);
-% high_pass_ecg = filter(num_high_pass, den_high_pass, standardized_ecg_noise);
+% low_pass_ecg = filter(num_low_pass, den_low_pass, ecg_noise);
+% high_pass_ecg = filter(num_high_pass, den_high_pass, ecg_noise);
 % bandpass_ecg = filter(num_high_pass, den_high_pass, low_pass_ecg); % Overlaps filtering from low pass filter with filtering from high pass filter
 
-% Low-pass filter with difference equation
-low_pass_ecg = [ecg_noise(1) 2*ecg_noise(1)+ecg_noise(2)]; % Darren: y(1) = x(1), y(2) = 2y(1)+x(2), T = 1
+% Low-pass filter with difference equation (5 sample delay)
+low_pass_ecg = [ecg_noise(1) 2*ecg_noise(1)+ecg_noise(2)]; % y(1) = x(1), y(2) = 2y(1)+x(2), T = 1
 for n = 3:5 % Darren
-    low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n); % Darren: y(n) = 2(n-1) - y(n-2) + x(n)
+    low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n); % y(n) = 2(n-1) - y(n-2) + x(n)
 end
 
 for n = 6:10
@@ -43,11 +43,11 @@ for n = 6:10
 end
 
 for n = 11:length(ecg_noise)
-    low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5) + ecg_noise(n-10); % Darren: y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5) + x(n-10)
+    low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5) + ecg_noise(n-10); % y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5) + x(n-10)
 end
 low_pass_ecg = low_pass_ecg.'; % Transpose into column vector
 
-% High-pass filter with difference equation
+% High-pass filter with difference equation (16 sample delay)
 bandpass_ecg = [(-1/32)*low_pass_ecg(1)];
 
 for n = 2:16
@@ -210,20 +210,36 @@ end_indices = end_indices - zero_padding; % Counters the zero padding
 start_indices = start_indices.';
 end_indices = end_indices.';
 
-for i = 1:length(start_indices)
-    subarray = bandpass_ecg(start_indices(i):end_indices(i)); % For each subarray or QRS complex (rather QRS complex and 3 prior samples)...
+for i = 1
+    subarray = ecg_noise(start_indices(i):end_indices(i)); % For each subarray or QRS complex (rather QRS complex and 3 prior samples)...
     [~, maxIndex] = max(subarray); % Return the index of the max value
-    maxIndices(i) = start_indices(i) - 1 + maxIndex; % The indices are adjusted to represent their positions in the global vector
+    maxIndices_original(i) = start_indices(i) - 1 + maxIndex; % The indices are adjusted to represent their positions in the global vector
+end
+for i = 2:length(start_indices)
+    subarray = ecg_noise(start_indices(i) - 27:end_indices(i) + 30); % For each subarray or QRS complex (rather QRS complex +/- 30 samples)...
+    [~, maxIndex] = max(subarray); % Return the index of the max value
+    maxIndices_original(i) = start_indices(i) - 1 - 27 + maxIndex; % The indices are adjusted to represent their positions in the global vector
 end
 
 figure;
 plot(ecg_noise);
-hold on;
-plot(maxIndices, ecg_noise(maxIndices), 'r.');
+hold on;    
+plot(maxIndices_original, ecg_noise(maxIndices_original), 'r.'); % Offset to counter the filter delays
 title('Peak Detection on Original ECG');
+
+for i = 1
+    subarray = bandpass_ecg(start_indices(i):end_indices(i)); % For each subarray or QRS complex (rather QRS complex and 3 prior samples)...
+    [~, maxIndex] = max(subarray); % Return the index of the max value
+    maxIndices_bandpass(i) = start_indices(i) - 1 + maxIndex; % The indices are adjusted to represent their positions in the global vector
+end
+for i = 2:length(start_indices)
+    subarray = bandpass_ecg(start_indices(i) - 27:end_indices(i) + 30); % For each subarray or QRS complex (rather QRS complex +/- 30 samples)...
+    [~, maxIndex] = max(subarray); % Return the index of the max value
+    maxIndices_bandpass(i) = start_indices(i) - 1 - 27 + maxIndex; % The indices are adjusted to represent their positions in the global vector
+end
 
 figure;
 plot(bandpass_ecg);
 hold on;
-plot(maxIndices, bandpass_ecg(maxIndices), 'r.');
+plot(maxIndices_bandpass, bandpass_ecg(maxIndices_bandpass), 'r.');
 title('Peak Detection on Filtered ECG');
