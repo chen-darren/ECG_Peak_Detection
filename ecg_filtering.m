@@ -2,9 +2,9 @@
 ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Year 3\Fall 2023\BME 3400 (Chon)\Project\ECG_Peak_Detection';
 
 % Shreya's paths - Darren: please use the same name for the path variables and comment out mine when running
-% ecg_noise_path = '/Users/shreyanagri/Downloads/'
+% ecg_noise_path = 
 
-% Load data - Darren: original data file
+% Load data - Darren: original data file converted to .csv
 ecg_noise_filename = 'ecgwithnoise';
 ecg_noise = readmatrix(strcat(ecg_noise_path,filesep,ecg_noise_filename));
 ecg_noise = ecg_noise(:,3); % Get rid of the NaN
@@ -129,22 +129,3 @@ figure;
 plot(squared_ecg);
 title('Squared ECG');
 
-% Moving window integration
-for N = 30:30:size(squared_ecg)
-    for n = (N-29):N
-        for z = (N-29):N
-            i(n) = squared_ecg(z);
-        end;
-        integrated_ecg(n) = sum(i(n));
-    end;
-end;
-
-% Plot squared and integrated ECG
-figure;
-subplot(2,1,1);
-plot(squared_ecg);
-title('Squared ECG');
-
-subplot(2,1,2);
-plot(derivative_ecg);
-title('Integrated ECG');
