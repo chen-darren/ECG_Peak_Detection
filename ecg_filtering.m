@@ -207,6 +207,9 @@ if start_indices(1) < 0
 end
 end_indices = end_indices - zero_padding; % Counters the zero padding
 
+start_indices = start_indices.';
+end_indices = end_indices.';
+
 for i = 1:length(start_indices)
     subarray = bandpass_ecg(start_indices(i):end_indices(i)); % For each subarray or QRS complex (rather QRS complex and 3 prior samples)...
     [~, maxIndex] = max(subarray); % Return the index of the max value
