@@ -234,7 +234,6 @@ for i = 2:length(start_indices)
     maxIndices_bandpass(i) = start_indices(i) - 1 - 27 + maxIndex; % The indices are adjusted to represent their positions in the global vector
 end
 
-% Plot R peaks in original and bandpass ECG
 figure;
 plot(ecg_noise);
 hold on;    
