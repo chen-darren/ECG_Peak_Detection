@@ -1,18 +1,21 @@
+clear;
+close all;
+
 % Darren's paths
 ecg_noise_path = 'C:\Users\dchen\OneDrive - University of Connecticut\Courses\Year 3\Fall 2023\BME 3400 (Chon)\Project\ECG_Peak_Detection';
 
 % Shreya's paths - Darren: please use the same name for the path variables and comment out mine when running
 % ecg_noise_path = 
 
-% Load data - Darren: original data file converted to .csv
+% Load data
 ecg_noise_filename = 'ecgwithnoise';
 ecg_noise = readmatrix(strcat(ecg_noise_path,filesep,ecg_noise_filename));
 ecg_noise = ecg_noise(:,3); % Get rid of the NaN
 
-% Plot original
-figure;
-plot(ecg_noise);
-title('ECG with Noise');
+% % Plot original
+% figure;
+% plot(ecg_noise);
+% title('ECG with Noise');
 
 % % Create the low-pass transfer function
 % num_low_pass = [1 0 0 0 0 -2 0 0 0 0 1];  % [1-z^(-5)]^2 = 1 - 2z^(-5) + z^(-10)) - Sets up numerator of transfer function
@@ -39,7 +42,7 @@ for n = 6:10
     low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5); % Darren: y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5)
 end
 
-for n = 11:size(ecg_noise,1)
+for n = 11:length(ecg_noise)
     low_pass_ecg(n) = 2*low_pass_ecg(n-1) - low_pass_ecg(n-2) + ecg_noise(n) - 2*ecg_noise(n-5) + ecg_noise(n-10); % Darren: y(n) = 2(n-1) - y(n-2) + x(n) - 2x(n-5) + x(n-10)
 end
 low_pass_ecg = low_pass_ecg.'; % Transpose into column vector
@@ -57,38 +60,38 @@ for n = 18:32
     bandpass_ecg(n) = bandpass_ecg(n-1) - (1/32)*low_pass_ecg(n) + low_pass_ecg(n-16) - low_pass_ecg(n-17);
 end
 
-for n = 33:size(low_pass_ecg,1)
+for n = 33:length(low_pass_ecg)
     bandpass_ecg(n) = bandpass_ecg(n-1) - (1/32)*low_pass_ecg(n) + low_pass_ecg(n-16) - low_pass_ecg(n-17) + (1/32)*low_pass_ecg(n-32);
 end
 bandpass_ecg = bandpass_ecg.';
 
-% Plot original input, low-pass, and bandpass
-figure;
-subplot(2,1,1);
-plot(ecg_noise);
-title('ECG with Noise');
-
-subplot(2,1,2);
-plot(low_pass_ecg);
-title('Low-Pass ECG');
-
-figure;
-subplot(2,1,1);
-plot(ecg_noise);
-title('ECG with Noise');
-
-subplot(2,1,2);
-plot(bandpass_ecg);
-title('Bandpass ECG');
-
-figure;
-subplot(2,1,1);
-plot(low_pass_ecg);
-title('Low-Pass ECG');
-
-subplot(2,1,2);
-plot(bandpass_ecg);
-title('Bandpass ECG');
+% % Plot original input, low-pass, and bandpass
+% figure;
+% subplot(2,1,1);
+% plot(ecg_noise);
+% title('ECG with Noise');
+% 
+% subplot(2,1,2);
+% plot(low_pass_ecg);
+% title('Low-Pass ECG');
+% 
+% figure;
+% subplot(2,1,1);
+% plot(ecg_noise);
+% title('ECG with Noise');
+% 
+% subplot(2,1,2);
+% plot(bandpass_ecg);
+% title('Bandpass ECG');
+% 
+% figure;
+% subplot(2,1,1);
+% plot(low_pass_ecg);
+% title('Low-Pass ECG');
+% 
+% subplot(2,1,2);
+% plot(bandpass_ecg);
+% title('Bandpass ECG');
 
 % % Create derivative transfer function
 % num_der = [2 1 0 -1 -2];
@@ -107,7 +110,7 @@ end
 
 derivative_ecg(4) = (2*bandpass_ecg(4) + bandpass_ecg(4-1) - bandpass_ecg(4-3))/8; % y(n) = [2x(n) + x(n-1) - x(n-3)]/8
 
-for n = 5:size(bandpass_ecg,1)
+for n = 5:length(bandpass_ecg)
     derivative_ecg(n) = (2*bandpass_ecg(n) + bandpass_ecg(n-1) - bandpass_ecg(n-3) - 2*bandpass_ecg(n-4))/8; % y(n) = [2x(n) + x(n-1) - x(n-3) - 2x(n-4)]/8
 end
 derivative_ecg = derivative_ecg.';
@@ -115,28 +118,109 @@ derivative_ecg = derivative_ecg.';
 % Square the derivative output
 squared_ecg = derivative_ecg.^2;
 
-% Plot bandpass, derivative, and squared
-figure;
-subplot(2,1,1);
-plot(bandpass_ecg);
-title('Bandpass ECG');
-
-subplot(2,1,2);
-plot(derivative_ecg);
-title('Derivative ECG');
-
-figure;
-plot(squared_ecg);
-title('Squared ECG');
+% % Plot bandpass, derivative, and squared
+% figure;
+% subplot(2,1,1);
+% plot(bandpass_ecg);
+% title('Bandpass ECG');
+% 
+% subplot(2,1,2);
+% plot(derivative_ecg);
+% title('Derivative ECG');
+% 
+% figure;
+% plot(squared_ecg);
+% title('Squared ECG');
 
 % Moving-window integration
-for N = 30:30:size(squared_ecg) % Creates windows that are each 30 values big
-    for n = (N-29):N % Samples for the thirty value window from 1-30 with respect to each window
-        integrated_ecg(n) = sum(squared_ecg((N-29):N)); % Integrates by making each point the sum of previous the 30 sample window 
-    end;
-end;
+for N = 1:30:length(squared_ecg)
+    if N + 29 < length(squared_ecg)
+        end_value = N + 29;
+    else
+        end_value = length(squared_ecg);
+    end
+        window_sum = sum(squared_ecg(N:end_value));  % Calculate the sum for the current window
+        integrated_ecg(N:end_value) = window_sum;  % Assign the sum to the corresponding positions
+end
+integrated_ecg = integrated_ecg.';
 
-% Plot integrated
-figure; 
-plot(integrated_ecg);
-title('Integrated ECG');
+% % Plot integrated
+% figure; 
+% plot(integrated_ecg);
+% title('Integrated ECG');
+
+% Mask cutoff_initial
+cutoff_initial = 450;
+
+for n = 1:length(integrated_ecg)
+    if integrated_ecg(n) >= cutoff_initial
+        masked_cutoff_initial_ecg(n) = 1;
+    else
+        masked_cutoff_initial_ecg(n) = 0;
+    end
+end
+masked_cutoff_initial_ecg = masked_cutoff_initial_ecg.';
+
+% % Plot masked
+% figure; 
+% plot(masked_cutoff_initial_ecg);
+% title('Masked ECG');
+
+% Find the start and end indices of each QRS complex
+start_pattern = [0,0,0,1,1]; % Pattern of the start of a QRS complex
+end_pattern = [1,0,0,0]; % Pattern of end of QRS complex
+
+start_indices = [];
+end_indices = [];
+startIndex = 1;
+
+zero_padding = 10; % Padding so that the pattern can start at the "first" index
+masked_cutoff_initial_ecg_tran = masked_cutoff_initial_ecg.'; % Makes the ECG a horizotnal vector
+masked_cutoff_initial_ecg_tran = [zeros(1,zero_padding) masked_cutoff_initial_ecg_tran, zeros(1,zero_padding)];
+
+while true
+    occurrence = strfind(masked_cutoff_initial_ecg_tran(startIndex:end), start_pattern); % Returns index of each instance of the start_pattern
+    
+    if isempty(occurrence)
+        break;  % No more occurrences found
+    else
+        start_indices = [start_indices, startIndex + occurrence - 1]; % The indices are adjusted to represent their positions in the global vector
+        startIndex = startIndex + occurrence(end) + 1; % Updates the startIndex to the position immediately after the last occurrence of start_pattern.
+    end
+end
+
+startIndex = 1;
+while true
+    occurrence = strfind(masked_cutoff_initial_ecg_tran(startIndex:end), end_pattern); % Returns index of each instance of the end_pattern
+    
+    if isempty(occurrence)
+        break;  % No more occurrences found
+    else
+        end_indices = [end_indices, startIndex + occurrence - 1]; % The indices are adjusted to represent their positions in the global vector
+        startIndex = startIndex + occurrence(end) + 1; % Updates the startIndex to the position immediately after the last occurrence of start_pattern.
+    end
+end
+
+start_indices = start_indices - zero_padding; % Counters the zero padding
+if start_indices(1) < 0
+    start_indices(1) = 1;
+end
+end_indices = end_indices - zero_padding; % Counters the zero padding
+
+for i = 1:length(start_indices)
+    subarray = bandpass_ecg(start_indices(i):end_indices(i)); % For each subarray or QRS complex (rather QRS complex and 3 prior samples)...
+    [~, maxIndex] = max(subarray); % Return the index of the max value
+    maxIndices(i) = start_indices(i) - 1 + maxIndex; % The indices are adjusted to represent their positions in the global vector
+end
+
+figure;
+plot(ecg_noise);
+hold on;
+plot(maxIndices, ecg_noise(maxIndices), 'r.');
+title('Peak Detection on Original ECG');
+
+figure;
+plot(bandpass_ecg);
+hold on;
+plot(maxIndices, bandpass_ecg(maxIndices), 'r.');
+title('Peak Detection on Filtered ECG');
