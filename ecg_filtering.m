@@ -270,3 +270,5 @@ ylabel('BPM');
 xlabel('Time (s)');
 
 linkaxes([ax1,ax2],'x');
+
+% saveas(gcf, 'ECG_peak_detection_HR.png')
