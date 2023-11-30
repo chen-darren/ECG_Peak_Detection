@@ -222,7 +222,7 @@ for i = 2:length(start_indices) % For each subarray or QRS complex and +/- 30 sa
     maxIndices_original(i) = start_indices(i) - 1 - 27 + maxIndex; % The indices are adjusted to represent their positions in the global vector
 end
 
-% Find R peaks in filtered ECG
+% Find R peaks in bandpass ECG
 for i = 1:length(start_indices) % For the first subarray or QRS complex, find the index of the max value
     subarray = bandpass_ecg(start_indices(i):end_indices(i));
     [~, maxIndex] = max(subarray); % Return the index of the max value
@@ -236,13 +236,17 @@ end
 
 % Plot R peaks in original and bandpass ECG
 figure;
-plot(ecg_noise);
+plot((0:length(ecg_noise)-1)/200, ecg_noise); % Sampling rate = 200 samples/s
 hold on;    
-plot(maxIndices_original, ecg_noise(maxIndices_original), 'r.');
+plot(maxIndices_original/200, ecg_noise(maxIndices_original), 'r.');
 title('Peak Detection on Original ECG');
+ylabel('Amplitude');
+xlabel('Time (s)');
 
 figure;
-plot(bandpass_ecg);
+plot((0:length(bandpass_ecg)-1)/200, bandpass_ecg); % Sampling rate = 200 samples/s
 hold on;
-plot(maxIndices_bandpass, bandpass_ecg(maxIndices_bandpass), 'r.');
+plot(maxIndices_bandpass/200, bandpass_ecg(maxIndices_bandpass), 'r.');
 title('Peak Detection on Bandpass ECG');
+ylabel('Amplitude');
+xlabel('Time (s)');
