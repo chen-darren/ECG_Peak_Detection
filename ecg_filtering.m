@@ -202,7 +202,7 @@ while true
 end
 
 start_indices = start_indices - zero_padding; % Counters the zero padding
-if start_indices(1) < 0
+if start_indices(1) <= 0
     start_indices(1) = 1;
 end
 end_indices = end_indices - zero_padding; % Counters the zero padding
@@ -223,7 +223,7 @@ for i = 2:length(start_indices) % For each subarray or QRS complex and +/- 30 sa
 end
 
 % Find R peaks in filtered ECG
-for i = 2:length(start_indices) % For each subarray or QRS complex and +/- 30 samples (to increase robustness), find the index of the max value
+for i = 1:length(start_indices) % For the first subarray or QRS complex, find the index of the max value
     subarray = bandpass_ecg(start_indices(i):end_indices(i));
     [~, maxIndex] = max(subarray); % Return the index of the max value
     maxIndices_bandpass(i) = start_indices(i) - 1 + maxIndex; % The indices are adjusted to represent their positions in the global vector
@@ -238,11 +238,11 @@ end
 figure;
 plot(ecg_noise);
 hold on;    
-plot(maxIndices_original, ecg_noise(maxIndices_original), 'r.'); % Offset to counter the filter delays
+plot(maxIndices_original, ecg_noise(maxIndices_original), 'r.');
 title('Peak Detection on Original ECG');
 
 figure;
 plot(bandpass_ecg);
 hold on;
 plot(maxIndices_bandpass, bandpass_ecg(maxIndices_bandpass), 'r.');
-title('Peak Detection on Filtered ECG');
+title('Peak Detection on Bandpass ECG');
