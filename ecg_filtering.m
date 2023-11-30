@@ -244,10 +244,11 @@ end
 % xlabel('Time (s)');
 
 bandpass_ecg_time = (0:length(bandpass_ecg)-1)/200; % Sampling rate = 200 samples/s
+maxPeak_bandpass_time = (maxIndices_bandpass-1)/200;
 figure;
 plot(bandpass_ecg_time, bandpass_ecg);
 hold on;
-plot(maxIndices_bandpass/200, bandpass_ecg(maxIndices_bandpass), 'r.');
+plot(maxPeak_bandpass_time, bandpass_ecg(maxIndices_bandpass), 'r.');
 title('Peak Detection on Bandpass ECG');
 ylabel('Amplitude');
 xlabel('Time (s)');
