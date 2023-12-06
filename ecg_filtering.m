@@ -47,7 +47,7 @@ for n = 11:length(ecg_noise)
 end
 low_pass_ecg = low_pass_ecg.'; % Transpose into column vector
 
-% High-pass filter with difference equation (16 sample delay)
+% High-pass filter with difference equation (16 sample delay): y(nT) = y(nT-T) - x(nT)/32 + x(nT-16T) - x(nT-17T) + x(nT-32T)/32
 bandpass_ecg = [(-1/32)*low_pass_ecg(1)];
 
 for n = 2:16
@@ -271,4 +271,4 @@ xlabel('Time (s)');
 
 linkaxes([ax1,ax2],'x');
 
-% saveas(gcf, 'ECG_peak_detection_HR.png')
+saveas(gcf, 'ECG_peak_detection_HR.png')
